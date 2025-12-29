@@ -16,12 +16,34 @@ async function main() {
     await mongoose.connect(MONGO_URL);
 }
 
-const initDB = async() => {
+// const initDB = async() => {
 
-    await Listing.deleteMany({});
-    initData.data = initData.data.map((obj) => ({ ...obj, owner: "67af642fc4e522733d466559"}));
-    await Listing.insertMany(initData.data);
-    console.log("data was initialized");
+//     await Listing.deleteMany({});
+//     initData.data = initData.data.map((obj) => ({ ...obj, owner: "67af642fc4e522733d466559"}));
+//     await Listing.insertMany(initData.data);
+//     console.log("data was initialized");
+// };
+
+// initDB();
+const initDB = async () => {
+  await Listing.deleteMany({});
+
+  initData.data = initData.data.map((obj) => {
+    const key = `${obj.location}, ${obj.country}`;
+    const coords = locationCoords[key] || [77.2090, 28.6139]; // Delhi fallback
+
+    return {
+      ...obj,
+      owner: "67af642fc4e522733d466559",
+      geometry: {
+        type: "Point",
+        coordinates: coords,
+      },
+    };
+  });
+
+  await Listing.insertMany(initData.data);
+  console.log("✅ data was initialized with geometry");
 };
 
 initDB();
